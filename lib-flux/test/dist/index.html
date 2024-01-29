@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <style>
+    div.row{
+      display: flex;
+    }
+
+    div.graph{
+      width: 600px;
+      /*border: 1px black solid;*/
+    }
+
+    div.options{
+      /*border: 1px #F0F0F0 solid;*/
+      width: 200px;
+    }
+
+    input[type=button]{
+      width: 100px;
+    }
+  </style>
+  <body>
+    <h1>Test lib.flux.min.js</h1>
+    <div class="row temperature">
+      <div style="width: 600px">
+        <canvas name="graph"></canvas>
+      </div>
+      <div class="options">
+        <div>
+          Live <input name="live" type="checkbox">
+        </div>
+        <hr>
+        <div>
+          <input name="download" type="button" value="Download CSV">
+        </div>
+        <hr>
+        <div>
+          <input name="clearStorage" type="button" value="Clear storage">
+        </div>
+      </div>
+    </div>
+    <a id="csv" style="display: none">CSV</a>
+  </body>
+</html>
+<script src="bundle.min.js"></script>

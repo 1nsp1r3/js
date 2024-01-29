@@ -1,0 +1,13 @@
+{
+  "name": "esp-lib-table",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "webpack",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "webpack": "^5.85.0",
+    "webpack-cli": "^5.1.1"
+  }
+}
