@@ -1,14 +1,17 @@
-const HTTP = require("http")
-const FS   = require("node:fs")
+const HTTP         = require("http")
+const EventEmitter = require("node:events")
+const FS           = require("node:fs")
 
 /**
  * Write a http jpeg stream
  */
-class HttpServer {
+class HttpServer extends EventEmitter {
   /**
    *
    */
   constructor(Port, StreamCallback){
+    super()
+
     this.port           = Port
     this.streamCallback = StreamCallback
   }
@@ -30,6 +33,8 @@ class HttpServer {
    */
   async main(Request, Response){
     console.log("Url requested:", Request.url)
+    this.emit("url")
+
     switch(Request.url){
       case "/stream": await this.streamCallback(Response); break
       case  "/image": this.sendImage(Response)           ; break
@@ -53,8 +58,8 @@ class HttpServer {
    *
    */
   sendIndex(Response){
-    Response.writeHead(200, {"Content-Type": "text/plain"})
-    Response.write("Hello World!")
+    Response.writeHead(200, {"Content-Type": "text/html"})
+    Response.write("<html><body><a href='/stream'>stream</a></body></html>")
   }
 
   /**

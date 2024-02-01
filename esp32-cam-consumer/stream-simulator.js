@@ -5,6 +5,8 @@ const JpegStreamWriter = require("./lib/jpegStreamWriter.js")
 
 const jpegStreamWriter = new JpegStreamWriter()
 
+let streamingLoop = false
+
 /**
  *
  */
@@ -16,13 +18,15 @@ function delay(Time) {
  *
  */
 async function stream(Response){
+  streamingLoop = true
   jpegStreamWriter.writeHeader(Response)
 
   let i = 0
   const files = await Fs.readDir("img/")
-  while(true){
-    const data = FS.readFileSync("img/" + files[i])
-    jpegStreamWriter.writeImage(data)
+  while(streamingLoop){
+    jpegStreamWriter.writeImage(
+      FS.readFileSync("img/" + files[i])
+    )
 
     await delay(200)
     i++
@@ -32,4 +36,12 @@ async function stream(Response){
 
 console.log("Listening on 8080...")
 const httpServer = new HttpServer(8080, stream)
+
+/**
+ * Request end of streaming loop when another request occure
+ */
+httpServer.on("url", () => {
+  streamingLoop = false
+})
+
 httpServer.start()
