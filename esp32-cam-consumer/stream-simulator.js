@@ -34,7 +34,6 @@ async function stream(Response){
   }
 }
 
-console.log("Listening on 8080...")
 const httpServer = new HttpServer(8080, stream)
 
 /**

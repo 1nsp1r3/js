@@ -8,7 +8,7 @@ class JpegStreamWriter {
   /**
    *
    */
-  constructor(Callback){
+  constructor(){
     this.response = null
   }
 

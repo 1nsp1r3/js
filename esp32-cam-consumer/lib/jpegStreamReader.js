@@ -1,14 +1,16 @@
-const Stream = require("stream").Transform
+const EventEmitter = require("events")
+const Stream       = require("stream").Transform
 
 /**
- * Read a http jpeg stream
- * And save each frame to the disk
+ * Read a http jpeg stream and emit 'image' event for each image received
  */
-class JpegStreamReader {
+class JpegStreamReader extends EventEmitter {
   /**
    *
    */
   constructor(Callback){
+    super()
+
     //headers vars
     this.header          = []
     this.headerCompleted = false
@@ -16,19 +18,26 @@ class JpegStreamReader {
     //data vars
     this.data            = new Stream()
     this.dataLength      = 0
-    this.imageCount      = 0
     this.callback        = Callback
+
+    this.image = null //Could be an images queue
   }
 
+  /**
+   *
+   */
+  getImage(){
+    return this.image
+  }
 
   /**
    *
    */
   read(Chunk){
     if (!this.headerCompleted){
-      this.#readHeaders(Chunk)
+      this.readHeaders(Chunk)
     }else{
-      this.#readImage(Chunk)
+      this.readImage(Chunk)
     }
   }
 
@@ -39,7 +48,7 @@ class JpegStreamReader {
    * 3: Content-Length: 119230
    * 4:
    */
-  #readHeaders(Chunk){
+  readHeaders(Chunk){
     const chunk = Chunk.toString()
     //console.log(`'${chunk}'`)
     const lines = chunk.split(/\r\n/)
@@ -64,18 +73,17 @@ class JpegStreamReader {
   /**
    *
    */
-  #readImage(Chunk){
+  readImage(Chunk){
     this.data.push(Chunk)
     this.dataLength += Chunk.byteLength
     if (this.dataLength >= this.contentLength){
-      this.callback(this.data.read())
+      this.image = this.data.read()
+      this.emit("image")
 
       //Reset header vars
       this.header          = []
       this.headerCompleted = false
       this.contentLength   = 0
-
-      this.imageCount++
     }
   }
 }

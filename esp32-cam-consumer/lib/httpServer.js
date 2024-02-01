@@ -1,6 +1,6 @@
 const HTTP         = require("http")
-const EventEmitter = require("node:events")
-const FS           = require("node:fs")
+const EventEmitter = require("events")
+const FS           = require("fs")
 
 /**
  * Write a http jpeg stream
@@ -20,12 +20,14 @@ class HttpServer extends EventEmitter {
    *
    */
   start(){
-    let that = this //On ne peut pas indiquer this.main directement en callback de createServer, obligé de feinter
+    let that = this
     HTTP
-      .createServer((Request, Response) => {
+      .createServer((Request, Response) => { //Function anonyme intermédiaire pour pouvoir utiliser une méthode d'objet en tant que callback
         that.main(Request, Response)
       })
       .listen(this.port)
+
+    console.log(`Listening on ${this.port}...`)
   }
 
   /**
@@ -33,8 +35,8 @@ class HttpServer extends EventEmitter {
    */
   async main(Request, Response){
     console.log("Url requested:", Request.url)
-    this.emit("url")
 
+    Request.on("close", () => this.emit("close"))
     switch(Request.url){
       case "/stream": await this.streamCallback(Response); break
       case  "/image": this.sendImage(Response)           ; break

@@ -1,61 +1,36 @@
-const HTTP             = require("node:http")
-const FS               = require("node:fs")
-const HttpServer       = require("./lib/httpServer.js")
-const JpegStreamReader = require("./lib/jpegStreamReader.js")
-const JpegStreamWriter = require("./lib/jpegStreamWriter.js")
+const FS            = require("fs")
+const Server        = require("./lib/server.js")
+const Client        = require("./lib/client.js")
+const Configuration = require("./config.json")
 
-let   jpegStreamReader = null
-const jpegStreamWriter = new JpegStreamWriter()
+//
+// [CAM] -- (http jpeg stream) --> [client] -- (disk) --> [server] -- (http jpeg stream) --> [Navigator]
+//
 
-let clientConnected = false
+const server = new Server(Configuration.server.port)
+server.start()
 
-var onImage = function(Data){
-  //console.log("new image !")
-  //FS.writeFileSync(jpegStreamReader.imageCount + ".jpg", Data)
+const client = new Client(Configuration.client.url)
 
-  if (clientConnected) jpegStreamWriter.writeImage(Data)
-}
+let imageCount = 0
+let cron = false
 
-jpegStreamReader = new JpegStreamReader(onImage)
+client.on("image", () => {
+  const image = client.getImage()
+  server.pushImage(image)
 
-/**
- *
- */
-function delay(Time) {
-  return new Promise(resolve  => setTimeout(resolve, Time))
-}
-
-/**
- *
- */
-async function stream(Response){
-  console.log("client connected.")
-  clientConnected = true
-  jpegStreamWriter.writeHeader(Response)
-
-  while(true){
-    await delay(1000)
+  if (cron){
+    FS.writeFileSync(imageCount + ".jpg", image)
+    imageCount++
+    cron = false
   }
-}
+})
 
-console.log("Listening on 8081...")
-const httpServer = new HttpServer(8081, stream)
-httpServer.start()
+client.connect() //Start reading
 
-console.log("client init... OK")
-HTTP
-  .get({
-    hostname: "127.0.0.1",
-    //hostname: "192.168.1.20",
-    //port: 80,
-    port: 8080,
-    path: "/stream",
-  }, (Response) => {
-    if (Response.statusCode != 200){
-      console.error("Status code:", Response.statusCode)
-      return
-    }
-
-    Response.on("data", (Chunk) => jpegStreamReader.read(Chunk))
-    Response.on("end", () => console.log("[event] end"))
-  })
+/**
+ * CRON engine
+ */
+setInterval(() => {
+  cron = true
+}, Configuration.cron.interval)
