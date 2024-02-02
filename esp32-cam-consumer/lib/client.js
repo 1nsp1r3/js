@@ -9,8 +9,8 @@ class Client extends JpegStreamReader {
   /**
    * Constructor
    */
-  constructor(Url){
-    super()
+  constructor(Url, BufferSize){
+    super(BufferSize)
 
     const url = Url.replace("http://", "")
     const pos = url.indexOf("/")

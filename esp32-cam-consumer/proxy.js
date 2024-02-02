@@ -10,7 +10,7 @@ const Configuration = require("./config.json")
 const server = new Server(Configuration.server.port)
 server.start()
 
-const client = new Client(Configuration.client.url)
+const client = new Client(Configuration.client.url, Configuration.advanced.bufferSize)
 
 let imageCount = 0
 let cron = false
